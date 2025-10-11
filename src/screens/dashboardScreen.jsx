@@ -1,8 +1,10 @@
 // Dashboard Screen - OUSL StaySmart Hostel Management
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import { colors } from '../styles';
 import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
+import ActivityItem from '../components/dashboardScreen/ActivityItem';
+import QuickActionButton from '../components/dashboardScreen/QuickActionButton';
 
 const DashboardScreen = () => {
   return (
@@ -46,38 +48,30 @@ const DashboardScreen = () => {
       <View style={styles.quickActionCard}>
         <Text style={styles.sectionTitle}>Quick Action</Text>
         <View style={styles.actionGrid}>
-          <TouchableOpacity style={[styles.actionBox, { backgroundColor: colors.actionBlue }]}>
-            <Image 
-              source={require('../../assets/icon/qr-code.png')} 
-              style={styles.actionImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.actionLabel}>Scan QR Code</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBox, { backgroundColor: colors.actionGreen }]}>
-            <Image 
-              source={require('../../assets/icon/complaint.png')} 
-              style={styles.actionImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.actionLabel}>New Complaint</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBox, { backgroundColor: colors.actionPink }]}>
-            <Image 
-              source={require('../../assets/icon/qr-code.png')} 
-              style={styles.actionImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.actionLabel}>Announcements</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBox, { backgroundColor: colors.actionPurple }]}>
-            <Image 
-              source={require('../../assets/icon/qr-code.png')} 
-              style={styles.actionImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.actionLabel}>Settings</Text>
-          </TouchableOpacity>
+          <QuickActionButton 
+            backgroundColor={colors.actionBlue}
+            iconSource={require('../../assets/icon/qr-code.png')}
+            label="Scan QR Code"
+            onPress={() => console.log('QR Scan pressed')}
+          />
+          <QuickActionButton 
+            backgroundColor={colors.actionGreen}
+            iconSource={require('../../assets/icon/complaint.png')}
+            label="New Complaint"
+            onPress={() => console.log('Complaint pressed')}
+          />
+          <QuickActionButton 
+            backgroundColor={colors.actionPink}
+            iconSource={require('../../assets/icon/qr-code.png')}
+            label="Announcements"
+            onPress={() => console.log('Announcements pressed')}
+          />
+          <QuickActionButton 
+            backgroundColor={colors.actionPurple}
+            iconSource={require('../../assets/icon/qr-code.png')}
+            label="Settings"
+            onPress={() => console.log('Settings pressed')}
+          />
         </View>
       </View>
 
@@ -110,25 +104,19 @@ const DashboardScreen = () => {
       <View style={styles.recentActivityCard}>
         <Text style={styles.sectionTitle}>Recent Activity</Text>
         
-        <View style={styles.activityItem}>
-          <View style={[styles.activityIcon, { backgroundColor: '#E8F5E9' }]}>
-            <Text style={styles.activityIconText}>✓</Text>
-          </View>
-          <View style={styles.activityContent}>
-            <Text style={styles.activityTitle}>Successfully checked in</Text>
-            <Text style={styles.activityTime}>Today at 2:30 PM</Text>
-          </View>
-        </View>
+        <ActivityItem 
+          icon="✓"
+          iconBackgroundColor="#E8F5E9"
+          title="Successfully checked in"
+          time="Today at 2:30 PM"
+        />
 
-        <View style={styles.activityItem}>
-          <View style={[styles.activityIcon, { backgroundColor: '#E3F2FD' }]}>
-            <Text style={styles.activityIconText}>📋</Text>
-          </View>
-          <View style={styles.activityContent}>
-            <Text style={styles.activityTitle}>Room assignment confirmed</Text>
-            <Text style={styles.activityTime}>Today at 10:15 AM</Text>
-          </View>
-        </View>
+        <ActivityItem 
+          icon="📋"
+          iconBackgroundColor="#E3F2FD"
+          title="Room assignment confirmed"
+          time="Today at 10:15 AM"
+        />
       </View>
 
       {/* Bottom padding for scrolling above nav */}
@@ -266,33 +254,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  actionBox: {
-    width: '48%',
-    aspectRatio: 1.2,
-    borderRadius: 15,
-    marginBottom: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionImage: {
-    width: 50,
-    height: 50,
-    marginBottom: 10,
-    tintColor: colors.textWhite,
-  },
-  actionIcon: {
-    fontSize: 40,
-    marginBottom: 10,
-  },
-  actionLabel: {
-    color: colors.textWhite,
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  actionContent: {
-    // Placeholder for action icons/content
-  },
   roomInfoCard: {
     backgroundColor: colors.background,
     margin: 20,
@@ -353,38 +314,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-    padding: 12,
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 12,
-  },
-  activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  activityIconText: {
-    fontSize: 18,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 3,
-  },
-  activityTime: {
-    fontSize: 12,
-    color: colors.textSecondary,
   },
 });
 
