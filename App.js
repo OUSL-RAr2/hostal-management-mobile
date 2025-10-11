@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
-import ColorDemo from './src/components/screens/ColorDemo.jsx';
+import ColorDemo from './src/screens/ColorDemo.jsx';
 
 export default function App() {
   return (
