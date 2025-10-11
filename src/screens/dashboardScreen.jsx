@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Image } from 'react-native';
 import { colors } from '../styles';
+import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
 
 const DashboardScreen = () => {
   return (
@@ -134,25 +135,8 @@ const DashboardScreen = () => {
       <View style={{ height: 80 }} />
       </ScrollView>
 
-      {/* Bottom Navigation - Fixed at bottom */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>🏠</Text>
-          <Text style={styles.navLabel}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>📱</Text>
-          <Text style={styles.navLabel}>QR Scan</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>📋</Text>
-          <Text style={styles.navLabel}>Complain</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>👤</Text>
-          <Text style={styles.navLabel}>Profile</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Bottom Navigation - Reusable Component */}
+      <BottomNavigation activeTab="Home" />
     </SafeAreaView>
   );
 };
@@ -400,35 +384,6 @@ const styles = StyleSheet.create({
   },
   activityTime: {
     fontSize: 12,
-    color: colors.textSecondary,
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    backgroundColor: colors.background,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    justifyContent: 'space-around',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  navItem: {
-    alignItems: 'center',
-  },
-  navIcon: {
-    fontSize: 24,
-    marginBottom: 5,
-  },
-  navLabel: {
-    fontSize: 10,
     color: colors.textSecondary,
   },
 });
