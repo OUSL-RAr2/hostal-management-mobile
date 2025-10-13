@@ -2,7 +2,7 @@
 
 const colors = {
   // Primary Colors
-  primary: '#FF6B35',        // Orange - main brand color
+  primary: '#F66D14',        // Orange - main brand color
   primaryLight: '#FF8C5A',   // Lighter orange
   primaryDark: '#E55A2B',    // Darker orange
   

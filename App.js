@@ -5,6 +5,7 @@ import Profile from './src/screens/Profile.jsx';
 import ColorDemo from './src/screens/ColorDemo.jsx';
 import DashboardScreen from './src/screens/dashboardScreen.jsx';
 import StartScreen from './src/screens/StartScreen.jsx';
+import LoginScreen from './src/screens/LoginScreen.jsx';
 
 export default function App() {
   return (
