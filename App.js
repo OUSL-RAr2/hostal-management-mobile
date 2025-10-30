@@ -12,7 +12,7 @@ export default function App() {
     <SafeAreaProvider>
       <View style={styles.container}>
         {/* <ColorDemo /> */}
-        <DashboardScreen />
+        <LoginScreen />
         <StatusBar style="auto" />
       </View>
     </SafeAreaProvider>
