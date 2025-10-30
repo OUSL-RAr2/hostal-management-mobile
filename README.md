@@ -283,8 +283,4 @@ This project is part of academic coursework at OUSL.
 
 <div align="center">
 
-**Made with ❤️ by OUSL BSE Team**
-
-⭐ Star this repo if you find it helpful!
-
 </div>
