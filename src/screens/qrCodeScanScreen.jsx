@@ -61,40 +61,8 @@ const QrCodeScanScreen = () => {
         </View>
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity 
-          style={styles.navItem}
-          onPress={() => setActiveTab('home')}
-        >
-          <Text style={[styles.navIcon, activeTab === 'home' && styles.navIconActive]}>🏠</Text>
-          <Text style={[styles.navLabel, activeTab === 'home' && styles.navLabelActive]}>Home</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.navItem}
-          onPress={() => setActiveTab('qr')}
-        >
-          <Text style={[styles.navIcon, activeTab === 'qr' && styles.navIconActive]}>📷</Text>
-          <Text style={[styles.navLabel, activeTab === 'qr' && styles.navLabelActive]}>QR Scan</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.navItem}
-          onPress={() => setActiveTab('complaints')}
-        >
-          <Text style={[styles.navIcon, activeTab === 'complaints' && styles.navIconActive]}>💬</Text>
-          <Text style={[styles.navLabel, activeTab === 'complaints' && styles.navLabelActive]}>Complaints</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.navItem}
-          onPress={() => setActiveTab('profile')}
-        >
-          <Text style={[styles.navIcon, activeTab === 'profile' && styles.navIconActive]}>👤</Text>
-          <Text style={[styles.navLabel, activeTab === 'profile' && styles.navLabelActive]}>Profile</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Bottom Navigation - Reusable Component */}
+      <BottomNavigation activeTab="QR Scan" />
     </View>
   );
 };
