@@ -76,24 +76,8 @@ const Profile = () => {
         </View>
       </ScrollView>
 
-      <View style={styles.bottomTabBar}>
-        <TouchableOpacity style={styles.tabItem}>
-          <Ionicons name="home-outline" size={24} color="#666" />
-          <Text style={styles.tabText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
-          <MaterialCommunityIcons name="qrcode-scan" size={24} color="#666" />
-          <Text style={styles.tabText}>QR Scan</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
-          <MaterialCommunityIcons name="chat-alert-outline" size={24} color="#666" />
-          <Text style={styles.tabText}>Complain</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
-          <Ionicons name="person" size={24} color="#D2691E" />
-          <Text style={[styles.tabText, { color: '#D2691E' }]}>Profile</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Bottom Navigation - Reusable Component */}
+      <BottomNavigation activeTab="Profile" />
     </SafeAreaView>
   );
 };
