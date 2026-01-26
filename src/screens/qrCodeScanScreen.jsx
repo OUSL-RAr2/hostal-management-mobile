@@ -13,7 +13,7 @@ const QrCodeScanScreen = ({ onNavigate }) => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <Header title="QR Scan" />
+      <Header title="QR Scan" onNavigate={onNavigate} />
 
       {/* Main Content */}
       <ScrollView style={styles.content}>

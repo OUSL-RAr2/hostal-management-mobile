@@ -3,7 +3,17 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles';
 
-const Header = ({ title, subtitle = 'OUSL TRF Hostel', onNotificationPress, backgroundColor }) => {
+const Header = ({ title, subtitle = 'OUSL TRF Hostel', onNotificationPress, onNavigate, backgroundColor }) => {
+  const handleNotificationPress = () => {
+    if (onNotificationPress) {
+      onNotificationPress();
+    } else if (onNavigate) {
+      onNavigate('announcements');
+    } else {
+      console.log('Notification pressed');
+    }
+  };
+
   return (
     <View style={[styles.header, backgroundColor && { backgroundColor }]}>
       <View>
@@ -12,7 +22,7 @@ const Header = ({ title, subtitle = 'OUSL TRF Hostel', onNotificationPress, back
       </View>
       <TouchableOpacity 
         style={styles.notificationButton} 
-        onPress={onNotificationPress || (() => console.log('Notification pressed'))}
+        onPress={handleNotificationPress}
       >
         <Ionicons name="notifications-outline" size={28} color="#fff" />
       </TouchableOpacity>
