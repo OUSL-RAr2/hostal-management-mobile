@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {View, Text, StyleSheet, Image } from 'react-native';
 import hostelimage from '../../assets/hostelimage.jpg'
 import footerimg1 from '../../assets/footerimg1.png'
@@ -6,7 +6,19 @@ import footerimg2 from '../../assets/footerimg2.png'
 import footerimg3 from '../../assets/footerimg3.png'
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const StartScreen = () => {
+const StartScreen = ({ onNavigate }) => {
+    useEffect(() => {
+        // Navigate to login screen after 5 seconds
+        const timer = setTimeout(() => {
+            if (onNavigate) {
+                onNavigate();
+            }
+        }, 5000);
+
+        // Cleanup timer on unmount
+        return () => clearTimeout(timer);
+    }, [onNavigate]);
+
     return(
         <SafeAreaView style={styles.container}>
             <Text style={styles.appTitle}>OUSL{"\n"}StaySmart</Text>

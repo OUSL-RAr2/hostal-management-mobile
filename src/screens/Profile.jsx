@@ -12,8 +12,10 @@ import {
   Ionicons,
   AntDesign,
 } from '@expo/vector-icons';
+import { Header } from '../components/ui';
+import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
 
-const Profile = () => {
+const Profile = ({ onNavigate }) => {
   const studentData = {
     name: 'K.M.T.N. Deshapriya',
     studentId: '223604391',
@@ -34,17 +36,7 @@ const Profile = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.headerBackground}>
-        <View style={styles.headerContent}>
-          <View>
-            <Text style={styles.profileTitle}>Profile</Text>
-            <Text style={styles.hostelName}>OUSL TRF Hostel</Text>
-          </View>
-          <TouchableOpacity style={styles.notificationBell}>
-            <Ionicons name="notifications-outline" size={28} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <Header title="Profile" />
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.profileCard}>
@@ -77,7 +69,7 @@ const Profile = () => {
       </ScrollView>
 
       {/* Bottom Navigation - Reusable Component */}
-      <BottomNavigation activeTab="Profile" />
+      <BottomNavigation activeTab="Profile" onNavigate={onNavigate} />
     </SafeAreaView>
   );
 };

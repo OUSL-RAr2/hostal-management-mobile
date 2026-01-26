@@ -2,23 +2,17 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { colors } from '../styles';
+import { Header } from '../components/ui';
+import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
 
-const QrCodeScanScreen = () => {
+const QrCodeScanScreen = ({ onNavigate }) => {
   const [currentStatus, setCurrentStatus] = useState('Checked In - Room F-24');
   const [activeTab, setActiveTab] = useState('qr');
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>QR Scan</Text>
-          <Text style={styles.subtitle}>OUSL TRF Hostel</Text>
-        </View>
-        <TouchableOpacity style={styles.notificationButton}>
-          <Text style={styles.notificationIcon}>🔔</Text>
-        </TouchableOpacity>
-      </View>
+      <Header title="QR Scan" />
 
       {/* Main Content */}
       <ScrollView style={styles.content}>
@@ -62,7 +56,7 @@ const QrCodeScanScreen = () => {
       </ScrollView>
 
       {/* Bottom Navigation - Reusable Component */}
-      <BottomNavigation activeTab="QR Scan" />
+      <BottomNavigation activeTab="QR Scan" onNavigate={onNavigate} />
     </View>
   );
 };

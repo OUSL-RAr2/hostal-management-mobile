@@ -3,23 +3,16 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../styles';
+import { Header } from '../components/ui';
 import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
 import ActivityItem from '../components/dashboardScreen/ActivityItem';
 import QuickActionButton from '../components/dashboardScreen/QuickActionButton';
 
-const DashboardScreen = () => {
+const DashboardScreen = ({ onNavigate }) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header - Fixed at top */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Dashboard</Text>
-          <Text style={styles.headerSubtitle}>OUSL TRF Hostel</Text>
-        </View>
-        <TouchableOpacity style={styles.notificationButton}>
-          <Text style={styles.notificationIcon}>🔔</Text>
-        </TouchableOpacity>
-      </View>
+      <Header title="Dashboard" />
 
       <ScrollView style={styles.scrollContent} contentContainerStyle={styles.scrollContainer}>
       {/* Current Status Card */}
@@ -53,13 +46,13 @@ const DashboardScreen = () => {
             backgroundColor={colors.actionBlue}
             iconSource={require('../../assets/icon/qr-code.png')}
             label="Scan QR Code"
-            onPress={() => console.log('QR Scan pressed')}
+            onPress={() => onNavigate && onNavigate('qrscan')}
           />
           <QuickActionButton 
             backgroundColor={colors.actionGreen}
             iconSource={require('../../assets/icon/complaint.png')}
             label="New Complaint"
-            onPress={() => console.log('Complaint pressed')}
+            onPress={() => onNavigate && onNavigate('complain')}
           />
           <QuickActionButton 
             backgroundColor={colors.actionPink}
@@ -125,7 +118,7 @@ const DashboardScreen = () => {
       </ScrollView>
 
       {/* Bottom Navigation - Reusable Component */}
-      <BottomNavigation activeTab="Home" />
+      <BottomNavigation activeTab="Home" onNavigate={onNavigate} />
     </SafeAreaView>
   );
 };

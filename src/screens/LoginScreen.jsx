@@ -1,11 +1,23 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Image} from 'react-native'
 import footerimg1 from '../../assets/footerimg1.png'
 import footerimg2 from '../../assets/footerimg2.png'
 import footerimg3 from '../../assets/footerimg3.png'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-const LoginScreen = () => {
+const LoginScreen = ({ onNavigate }) => {
+    useEffect(() => {
+        // Navigate to dashboard after 10 seconds
+        const timer = setTimeout(() => {
+            if (onNavigate) {
+                onNavigate();
+            }
+        }, 10000);
+
+        // Cleanup timer on unmount
+        return () => clearTimeout(timer);
+    }, [onNavigate]);
+
     return(
         <SafeAreaView style={styles.container}>
             <Text style={styles.appTitle}>OUSL{"\n"}StaySmart</Text>
