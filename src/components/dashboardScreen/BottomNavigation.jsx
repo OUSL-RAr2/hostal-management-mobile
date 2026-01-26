@@ -3,31 +3,49 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 
-const BottomNavigation = ({ activeTab = 'Home' }) => {
+const BottomNavigation = ({ activeTab = 'Home', onNavigate }) => {
+  const handleNavigation = (screen) => {
+    if (onNavigate) {
+      onNavigate(screen);
+    }
+  };
+
   return (
     <View style={styles.bottomTabBar}>
-      <TouchableOpacity style={styles.tabItem} onPress={() => console.log('Home pressed')}>
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => handleNavigation('dashboard')}
+      >
         <Ionicons name="home-outline" size={24} color={activeTab === 'Home' ? '#D2691E' : '#666'} />
         <Text style={[styles.tabText, activeTab === 'Home' && { color: '#D2691E' }]}>
           Home
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.tabItem} onPress={() => console.log('QR Scan pressed')}>
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => handleNavigation('qrscan')}
+      >
         <MaterialCommunityIcons name="qrcode-scan" size={24} color={activeTab === 'QR Scan' ? '#D2691E' : '#666'} />
         <Text style={[styles.tabText, activeTab === 'QR Scan' && { color: '#D2691E' }]}>
           QR Scan
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.tabItem} onPress={() => console.log('Complain pressed')}>
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => handleNavigation('complain')}
+      >
         <MaterialCommunityIcons name="chat-alert-outline" size={24} color={activeTab === 'Complain' ? '#D2691E' : '#666'} />
         <Text style={[styles.tabText, activeTab === 'Complain' && { color: '#D2691E' }]}>
           Complain
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.tabItem} onPress={() => console.log('Profile pressed')}>
+      <TouchableOpacity 
+        style={styles.tabItem} 
+        onPress={() => handleNavigation('profile')}
+      >
         <Ionicons name="person" size={24} color={activeTab === 'Profile' ? '#D2691E' : '#666'} />
         <Text style={[styles.tabText, activeTab === 'Profile' && { color: '#D2691E' }]}>
           Profile
