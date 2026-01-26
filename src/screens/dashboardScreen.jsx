@@ -12,7 +12,7 @@ const DashboardScreen = ({ onNavigate }) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header - Fixed at top */}
-      <Header title="Dashboard" />
+      <Header title="Dashboard" onNavigate={onNavigate} />
 
       <ScrollView style={styles.scrollContent} contentContainerStyle={styles.scrollContainer}>
       {/* Current Status Card */}
@@ -58,7 +58,7 @@ const DashboardScreen = ({ onNavigate }) => {
             backgroundColor={colors.actionPink}
             iconSource={require('../../assets/icon/announcement.svg')}
             label="Announcements"
-            onPress={() => console.log('Announcements pressed')}
+            onPress={() => onNavigate && onNavigate('announcements')}
           />
           <QuickActionButton 
             backgroundColor={colors.actionPurple}

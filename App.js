@@ -9,6 +9,7 @@ import StartScreen from './src/screens/StartScreen.jsx';
 import LoginScreen from './src/screens/LoginScreen.jsx';
 import QrCodeScanScreen from './src/screens/qrCodeScanScreen.jsx';
 import ComplainScreen from './src/screens/ComplainScreen.jsx';
+import AnnouncementScreen from './src/screens/AnnouncementScreen.jsx';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('start');
@@ -29,6 +30,8 @@ export default function App() {
         return <QrCodeScanScreen onNavigate={handleNavigation} />;
       case 'complain':
         return <ComplainScreen onNavigate={handleNavigation} />;
+      case 'announcements':
+        return <AnnouncementScreen onNavigate={handleNavigation} />;
       case 'profile':
         return <Profile onNavigate={handleNavigation} />;
       default:

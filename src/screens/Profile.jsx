@@ -36,7 +36,7 @@ const Profile = ({ onNavigate }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header title="Profile" />
+      <Header title="Profile" onNavigate={onNavigate} />
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.profileCard}>

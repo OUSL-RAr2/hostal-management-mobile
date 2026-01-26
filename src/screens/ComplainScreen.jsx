@@ -14,7 +14,7 @@ const ComplainScreen = ({ onNavigate }) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header with gradient effect */}
-      <Header title="Complain" />
+      <Header title="Complain" onNavigate={onNavigate} />
 
       <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* New Complaint Card */}

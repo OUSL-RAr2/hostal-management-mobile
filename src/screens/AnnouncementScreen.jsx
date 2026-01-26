@@ -32,7 +32,7 @@ const AnnouncementScreen = ({ onNavigate }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Announcements" />
+      <Header title="Announcements" onNavigate={onNavigate} />
 
       <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {announcements.map((announcement) => (
