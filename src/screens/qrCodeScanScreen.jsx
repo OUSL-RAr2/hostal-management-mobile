@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../styles';
 import { Header } from '../components/ui';
 import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
@@ -20,11 +21,7 @@ const QrCodeScanScreen = ({ onNavigate }) => {
         <View style={styles.card}>
           <View style={styles.qrScannerBox}>
             <View style={styles.qrPlaceholder}>
-              <View style={styles.qrGrid}>
-                {[...Array(9)].map((_, i) => (
-                  <View key={i} style={styles.qrPixel} />
-                ))}
-              </View>
+              <MaterialCommunityIcons name="qrcode-scan" size={120} color="#666" />
             </View>
             <Text style={styles.qrInstruction}>Point camera at QR code</Text>
           </View>
@@ -119,26 +116,14 @@ const styles = StyleSheet.create({
   },
   qrPlaceholder: {
     borderWidth: 3,
-    borderColor: colors.textLight,
+    borderColor: '#FFD4A8',
     borderStyle: 'dashed',
     borderRadius: 16,
     padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 280,
-  },
-  qrGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    width: 90,
-    marginBottom: 16,
-  },
-  qrPixel: {
-    width: 26,
-    height: 26,
-    backgroundColor: colors.textPrimary,
-    margin: 2,
-    borderRadius: 2,
+    backgroundColor: '#FFF8F0',
   },
   qrInstruction: {
     fontSize: 14,
