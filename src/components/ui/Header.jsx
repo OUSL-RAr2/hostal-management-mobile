@@ -8,7 +8,7 @@ const Header = ({ title, subtitle = 'OUSL TRF Hostel', onNotificationPress, onNa
     if (onNotificationPress) {
       onNotificationPress();
     } else if (onNavigate) {
-      onNavigate('notifications');
+      onNavigate('announcements');
     } else {
       console.log('Notification pressed');
     }
