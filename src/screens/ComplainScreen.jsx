@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { colors } from '../styles';
-import { Header } from '../components/ui';
+import { Header, GradientButton } from '../components/ui';
 import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
 
 const ComplainScreen = ({ onNavigate }) => {
@@ -59,9 +59,10 @@ const ComplainScreen = ({ onNavigate }) => {
             <Text style={styles.checkboxLabel}>Submit anonymously</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>Submit Complaint</Text>
-          </TouchableOpacity>
+          <GradientButton 
+            title="Submit Complaint" 
+            onPress={() => console.log('Submit complaint')}
+          />
         </View>
 
         {/* Previous Complaints */}
@@ -160,16 +161,18 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#CCCCCC',
+    borderRadius: 10,
     marginBottom: 16,
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
-    backgroundColor: '#FAFAFA',
   },
   picker: {
     height: 50,
     width: '100%',
+    color: '#333333',
+    backgroundColor: 'transparent',
   },
   textArea: {
     borderWidth: 1,

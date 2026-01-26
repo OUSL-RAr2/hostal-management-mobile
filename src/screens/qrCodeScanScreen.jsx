@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../styles';
-import { Header } from '../components/ui';
+import { Header, GradientButton } from '../components/ui';
 import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
 
 const QrCodeScanScreen = ({ onNavigate }) => {
@@ -26,9 +26,10 @@ const QrCodeScanScreen = ({ onNavigate }) => {
             <Text style={styles.qrInstruction}>Point camera at QR code</Text>
           </View>
           
-          <TouchableOpacity style={styles.scanButton}>
-            <Text style={styles.scanButtonText}>Open QR Scanner</Text>
-          </TouchableOpacity>
+          <GradientButton 
+            title="Open QR Scanne" 
+            onPress={() => console.log('Open QR Scanner')}
+          />
         </View>
 
         {/* Status Card */}
