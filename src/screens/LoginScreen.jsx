@@ -1,45 +1,69 @@
-import React, { useEffect } from 'react'
+import React, { useState } from 'react'
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Image} from 'react-native'
+import * as SecureStore from 'expo-secure-store';
 import footerimg1 from '../../assets/footerimg1.png'
 import footerimg2 from '../../assets/footerimg2.png'
 import footerimg3 from '../../assets/footerimg3.png'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-const LoginScreen = ({ onNavigate }) => {
-    useEffect(() => {
-        // Navigate to dashboard after 10 seconds
-        const timer = setTimeout(() => {
-            if (onNavigate) {
+
+const LoginScreen = ({onNavigate}) => {
+
+
+    const [loginData, setLoginData] = useState({
+        nic: '',
+        password: '',
+    });
+
+    const handleSubmit = async () => {
+        
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/sign-in', { //replace localhost with your server IP
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+
+                alert(data.message);
+
+                console.log(data, typeof data);
+
+                await SecureStore.setItemAsync('token', JSON.stringify(data.token));
+
+                console.log('Login successful:', data);
+
                 onNavigate();
             }
-        }, 10000);
 
-        // Cleanup timer on unmount
-        return () => clearTimeout(timer);
-    }, [onNavigate]);
-
+        } catch (error) {
+            console.error('Error logging in:', error);
+        }
+    }
     return(
         <SafeAreaView style={styles.container}>
             <Text style={styles.appTitle}>OUSL{"\n"}StaySmart</Text>
             <Text style={styles.text}>Login to your account</Text>
 
-            <TextInput style={styles.username} placeholder='Enter your username'></TextInput>
 
-            <TextInput style={styles.password} placeholder='Enter your Password'>
+            <TextInput style={styles.nic} placeholder='Enter your NIC' value={loginData.nic} onChangeText={(value) => setLoginData({...loginData, nic: value})}></TextInput>
+
+            <TextInput style={styles.password} placeholder='Enter your Password' value={loginData.password} onChangeText={(value) => setLoginData({...loginData, password: value})} >
             </TextInput>
 
             <TouchableOpacity>
                 <Text style={styles.forgotPass}>Forgot Password</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.loginButton}>
+            <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
                 <Text style={styles.loginButtonName}>Login</Text>
             </TouchableOpacity>
 
-            <Text style={styles.signupText}>
-                If you don't have a account?
-                <Text style={styles.signupLink}>Sign Up</Text>
-            </Text>
             <View style={styles.footer}>
                 <Image source={footerimg1} style={styles.footerImage1}/>
                 <Image source={footerimg2} style={styles.footerImage2}/>
@@ -72,7 +96,7 @@ const styles = StyleSheet.create ({
         marginTop:20,
         marginBottom:'15%',
     },
-    username:{
+    nic:{
         width: '75%',
         borderWidth: 1,
         borderColor: '#C25B00',
