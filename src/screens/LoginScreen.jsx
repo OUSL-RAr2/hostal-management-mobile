@@ -5,6 +5,7 @@ import footerimg1 from '../../assets/footerimg1.png'
 import footerimg2 from '../../assets/footerimg2.png'
 import footerimg3 from '../../assets/footerimg3.png'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { buildUrl, API_CONFIG } from '../config/api.config';
 
 
 const LoginScreen = ({onNavigate}) => {
@@ -18,7 +19,7 @@ const LoginScreen = ({onNavigate}) => {
     const handleSubmit = async () => {
         
         try {
-            const response = await fetch('http://localhost:5000/api/auth/sign-in', { //replace localhost with your server IP
+            const response = await fetch(buildUrl(API_CONFIG.ENDPOINTS.AUTH.SIGN_IN), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -29,20 +30,23 @@ const LoginScreen = ({onNavigate}) => {
             const data = await response.json();
 
             if (response.ok) {
-
-                alert(data.message);
-
                 console.log(data, typeof data);
 
-                await SecureStore.setItemAsync('token', JSON.stringify(data.token));
+                // Store token (data.token is already a string, no need to stringify)
+                await SecureStore.setItemAsync('token', data.token);
 
                 console.log('Login successful:', data);
 
+                // Navigate to dashboard after successful login
                 onNavigate();
+            } else {
+                // Show error message if login fails
+                alert(data.message || 'Login failed. Please check your credentials.');
             }
 
         } catch (error) {
             console.error('Error logging in:', error);
+            alert('An error occurred during login. Please try again.');
         }
     }
     return(
