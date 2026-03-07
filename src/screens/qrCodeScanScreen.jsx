@@ -1,21 +1,56 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera'; 
 import { colors } from '../styles';
 import { Header, GradientButton } from '../components/ui';
 import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
-import { getQrAction } from '../services/qr/qrScanner';
+import { processQRScan, getMyLogs } from '../services/qr/qrScanner';
 
 const QrCodeScanScreen = ({ onNavigate }) => {
-  const [currentStatus, setCurrentStatus] = useState('Pending Scan...');
+  const [currentStatus, setCurrentStatus] = useState({
+    text: 'Not checked in',
+    action: null,
+    location: null,
+    timestamp: null,
+  });
   const [activeTab, setActiveTab] = useState('qr');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Camera State
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraOpen, setCameraOpen] = useState(false);
   const [scanned, setScanned] = useState(false);
+
+  // Load last check-in/out status on mount
+  useEffect(() => {
+    loadLastStatus();
+  }, []);
+
+  const loadLastStatus = async () => {
+    try {
+      const logs = await getMyLogs(1); // Get the most recent log
+      if (logs && logs.length > 0) {
+        const lastLog = logs[0];
+        const action = lastLog.Action;
+        const location = lastLog.Location;
+        const timestamp = new Date(lastLog.Timestamp).toLocaleString();
+        
+        setCurrentStatus({
+          text: action === 'check_in' 
+            ? `Checked In - ${location}` 
+            : `Checked Out - ${location}`,
+          action: action,
+          location: location,
+          timestamp: timestamp,
+        });
+      }
+    } catch (error) {
+      console.log('Could not load last status:', error.message);
+      // It's okay if this fails, user might not have any logs yet
+    }
+  };
 
   // Function to request permission and open camera
   const handleOpenScanner = async () => {
@@ -31,20 +66,53 @@ const QrCodeScanScreen = ({ onNavigate }) => {
   };
 
   // Function to handle the actual scan
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = async ({ type, data }) => {
+    if (isProcessing) return; // Prevent multiple scans
+
     setScanned(true);
     setCameraOpen(false); // Close camera immediately after scanning
+    setIsProcessing(true);
 
     try {
-      // Pass the scanned text to your custom function
-      const result = getQrAction(data);
+      // Send the scanned QR code to backend
+      const result = await processQRScan(data);
 
       // Update the UI with the result
-      setCurrentStatus(`Checked In - Room ${result.room || 'Unknown'}`);
-      Alert.alert("Scan Successful", `Action: ${result.action}\nRoom: ${result.room}`);
+      const statusText = result.action === 'check_in' 
+        ? `Checked In - ${result.location}` 
+        : `Checked Out - ${result.location}`;
+
+      setCurrentStatus({
+        text: statusText,
+        action: result.action,
+        location: result.location,
+        timestamp: new Date(result.timestamp).toLocaleString(),
+      });
+
+      // Show success message
+      Alert.alert(
+        "Success!", 
+        result.message,
+        [
+          {
+            text: "OK",
+            onPress: () => setIsProcessing(false)
+          }
+        ]
+      );
 
     } catch (error) {
-      Alert.alert("Invalid QR Code", "This QR code is not recognized by the system.");
+      console.error('QR Scan Error:', error);
+      Alert.alert(
+        "Scan Failed", 
+        error.message || "Failed to process QR code. Please try again.",
+        [
+          {
+            text: "OK",
+            onPress: () => setIsProcessing(false)
+          }
+        ]
+      );
     }
   };
 
@@ -94,8 +162,9 @@ const QrCodeScanScreen = ({ onNavigate }) => {
 
           {!cameraOpen && (
             <GradientButton
-              title="Open QR Scanner"
+              title={isProcessing ? "Processing..." : "Open QR Scanner"}
               onPress={handleOpenScanner}
+              disabled={isProcessing}
             />
           )}
 
@@ -103,9 +172,19 @@ const QrCodeScanScreen = ({ onNavigate }) => {
           <View style={styles.statusContainer}>
             <Text style={styles.statusLabel}>Current Status</Text>
             <View style={styles.statusRow}>
-              <View style={styles.statusIndicator} />
-              <Text style={styles.statusText}>{currentStatus}</Text>
+              <View 
+                style={[
+                  styles.statusIndicator,
+                  currentStatus.action === 'check_in' && styles.statusIndicatorActive
+                ]} 
+              />
+              <Text style={styles.statusText}>{currentStatus.text}</Text>
             </View>
+            {currentStatus.timestamp && (
+              <Text style={styles.timestampText}>
+                Last updated: {currentStatus.timestamp}
+              </Text>
+            )}
           </View>
         </View>
 
@@ -214,13 +293,21 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: colors.success,
+    backgroundColor: '#999',
     marginRight: 8,
+  },
+  statusIndicatorActive: {
+    backgroundColor: colors.success,
   },
   statusText: {
     fontSize: 14,
     fontWeight: '700',
-    color: colors.success,
+    color: colors.textPrimary,
+  },
+  timestampText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 6,
   },
   cardTitle: {
     fontSize: 16,

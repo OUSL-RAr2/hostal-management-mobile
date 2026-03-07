@@ -96,7 +96,7 @@ const DashboardScreen = ({ onNavigate }) => {
         <View style={styles.statusCard}>
           <View style={styles.statusHeader}>
             <View>
-              <Text style={styles.statusLabel}>Current Status</Text>
+              <Text style={styles.statusLabel}>Booking Status</Text>
               <Text style={[
                 styles.statusValue,
                 { color: dashboardData?.booking ? colors.success : colors.textSecondary }
@@ -110,6 +110,33 @@ const DashboardScreen = ({ onNavigate }) => {
                 <Text style={styles.roomNumber}>{dashboardData.booking.roomNumber}</Text>
               </View>
             )}
+          </View>
+
+          {/* Physical Check-In/Out Status */}
+          <View style={styles.physicalStatusContainer}>
+            <View style={styles.physicalStatusRow}>
+              <View 
+                style={[
+                  styles.physicalStatusIndicator,
+                  dashboardData?.physicalStatus === 'Checked In' && styles.physicalStatusIndicatorActive
+                ]} 
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.physicalStatusLabel}>Physical Status</Text>
+                <Text style={[
+                  styles.physicalStatusText,
+                  { color: dashboardData?.physicalStatus === 'Checked In' ? colors.success : colors.textSecondary }
+                ]}>
+                  {dashboardData?.physicalStatus || 'Not Checked In'}
+                </Text>
+                {dashboardData?.lastLocation && (
+                  <Text style={styles.physicalStatusLocation}>
+                    {dashboardData.lastLocation}
+                    {dashboardData?.lastCheckInOut && ` • ${new Date(dashboardData.lastCheckInOut).toLocaleString()}`}
+                  </Text>
+                )}
+              </View>
+            </View>
           </View>
           
           {dashboardData?.booking && (
@@ -454,6 +481,41 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 20,
     fontStyle: 'italic',
+  },
+  physicalStatusContainer: {
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
+  },
+  physicalStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  physicalStatusIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#999',
+    marginRight: 12,
+  },
+  physicalStatusIndicatorActive: {
+    backgroundColor: colors.success,
+  },
+  physicalStatusLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  physicalStatusText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  physicalStatusLocation: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 4,
   },
 });
 

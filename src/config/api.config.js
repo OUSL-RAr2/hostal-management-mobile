@@ -7,7 +7,7 @@
 export const API_CONFIG = {
   // Replace this IP with your machine's IP address
   // DO NOT use 'localhost' or '127.0.0.1' when testing on a physical device or emulator
-  BASE_URL: 'http://192.168.1.6:5000',
+  BASE_URL: 'http://192.168.1.3:5000',
   
   // API endpoints
   ENDPOINTS: {
@@ -15,6 +15,11 @@ export const API_CONFIG = {
       SIGN_IN: '/api/auth/sign-in',
       SIGN_UP: '/api/auth/sign-up',
       SIGN_OUT: '/api/auth/sign-out',
+    },
+    QR: {
+      SCAN: '/api/qr/scan',
+      MY_LOGS: '/api/qr/my-logs',
+      GET_ACTIVE: '/api/qr/active',
     },
     DASHBOARD: {
       GET_DATA: '/api/dashboard/data',
