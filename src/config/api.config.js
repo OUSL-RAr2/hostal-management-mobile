@@ -16,6 +16,13 @@ export const API_CONFIG = {
       SIGN_UP: '/api/auth/sign-up',
       SIGN_OUT: '/api/auth/sign-out',
     },
+    DASHBOARD: {
+      GET_DATA: '/api/dashboard/data',
+      GET_ROOM_INFO: '/api/dashboard/room-info',
+      GET_ACTIVITIES: '/api/dashboard/activities',
+      CREATE_COMPLAINT: '/api/dashboard/complaints',
+      GET_COMPLAINTS: '/api/dashboard/complaints',
+    },
     COMPLAINTS: {
       GET_ALL: '/api/complaints',
       CREATE: '/api/complaints',

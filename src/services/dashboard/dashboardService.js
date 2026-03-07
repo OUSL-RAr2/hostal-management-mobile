@@ -1,0 +1,126 @@
+// Dashboard API Service for Hostel Management Mobile App
+import { API_CONFIG } from '../../config/api.config';
+import { authenticatedRequest } from '../auth/authService';
+
+/**
+ * Get dashboard data for the logged-in user
+ * @returns {Promise<object>} Dashboard data including booking, activities, and roommates
+ */
+export const getDashboardData = async () => {
+  try {
+    const response = await authenticatedRequest(
+      API_CONFIG.ENDPOINTS.DASHBOARD.GET_DATA,
+      {
+        method: 'GET',
+      }
+    );
+
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.message || 'Failed to fetch dashboard data');
+    }
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get detailed room information
+ * @returns {Promise<object>} Room information including roommates
+ */
+export const getRoomInfo = async () => {
+  try {
+    const response = await authenticatedRequest(
+      API_CONFIG.ENDPOINTS.DASHBOARD.GET_ROOM_INFO,
+      {
+        method: 'GET',
+      }
+    );
+
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.message || 'Failed to fetch room information');
+    }
+  } catch (error) {
+    console.error('Error fetching room info:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get recent activities for the logged-in user
+ * @param {number} limit - Maximum number of activities to fetch (default: 10)
+ * @returns {Promise<Array>} Array of recent activities
+ */
+export const getRecentActivities = async (limit = 10) => {
+  try {
+    const response = await authenticatedRequest(
+      `${API_CONFIG.ENDPOINTS.DASHBOARD.GET_ACTIVITIES}?limit=${limit}`,
+      {
+        method: 'GET',
+      }
+    );
+
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.message || 'Failed to fetch recent activities');
+    }
+  } catch (error) {
+    console.error('Error fetching activities:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new complaint
+ * @param {object} complaintData - Complaint details
+ * @returns {Promise<object>} Created complaint
+ */
+export const createComplaint = async (complaintData) => {
+  try {
+    const response = await authenticatedRequest(
+      API_CONFIG.ENDPOINTS.DASHBOARD.CREATE_COMPLAINT,
+      {
+        method: 'POST',
+        body: JSON.stringify(complaintData),
+      }
+    );
+
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.message || 'Failed to create complaint');
+    }
+  } catch (error) {
+    console.error('Error creating complaint:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get user's complaints
+ * @returns {Promise<Array>} Array of user's complaints
+ */
+export const getUserComplaints = async () => {
+  try {
+    const response = await authenticatedRequest(
+      API_CONFIG.ENDPOINTS.DASHBOARD.GET_COMPLAINTS,
+      {
+        method: 'GET',
+      }
+    );
+
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.message || 'Failed to fetch complaints');
+    }
+  } catch (error) {
+    console.error('Error fetching complaints:', error);
+    throw error;
+  }
+};
