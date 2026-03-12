@@ -10,10 +10,11 @@
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
-if (!BASE_URL) {
+if (!BASE_URL || BASE_URL.includes('YOUR_LOCAL_IP')) {
   console.warn(
-    '[api.config] EXPO_PUBLIC_API_URL is not set!\n' +
-    'Copy .env.example → .env.local and set your local IP.\n' +
+    '[api.config] EXPO_PUBLIC_API_URL is not configured!\n' +
+    'Open .env.local and replace YOUR_LOCAL_IP with your machine\'s real IP.\n' +
+    'Run "ipconfig" (Windows) to find your IPv4 Address.\n' +
     'Example: EXPO_PUBLIC_API_URL=http://192.168.1.x:5000'
   );
 }
