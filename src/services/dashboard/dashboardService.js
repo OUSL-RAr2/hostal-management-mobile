@@ -124,3 +124,43 @@ export const getUserComplaints = async () => {
     throw error;
   }
 };
+
+/**
+ * Delete a user's complaint when allowed by backend rules
+ * @param {string} complaintId - Complaint identifier
+ * @returns {Promise<void>}
+ */
+export const deleteComplaint = async (complaintId) => {
+  try {
+    const dashboardDeleteEndpoint = `${API_CONFIG.ENDPOINTS.DASHBOARD.GET_COMPLAINTS}/${complaintId}`;
+
+    try {
+      const response = await authenticatedRequest(
+        dashboardDeleteEndpoint,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (response.success === false) {
+        throw new Error(response.message || 'Failed to delete complaint');
+      }
+
+      return;
+    } catch (primaryError) {
+      const fallbackResponse = await authenticatedRequest(
+        `${API_CONFIG.ENDPOINTS.COMPLAINTS.GET_ALL}/${complaintId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (fallbackResponse.success === false) {
+        throw new Error(fallbackResponse.message || primaryError.message || 'Failed to delete complaint');
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting complaint:', error);
+    throw error;
+  }
+};

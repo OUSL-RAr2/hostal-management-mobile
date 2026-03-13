@@ -51,7 +51,30 @@ export const authenticatedRequest = async (endpoint, options = {}) => {
       credentials: 'include', // Include cookies in the request
     });
 
-    const data = await response.json();
+    const rawResponse = await response.text();
+    let data = {};
+
+    if (rawResponse) {
+      try {
+        data = JSON.parse(rawResponse);
+      } catch (parseError) {
+        const isHtmlResponse = rawResponse.trim().startsWith('<');
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Requested API route was not found on the server.');
+          }
+
+          throw new Error(
+            isHtmlResponse
+              ? `Server returned an unexpected HTML response (${response.status}).`
+              : rawResponse
+          );
+        }
+
+        throw new Error('Server returned an invalid JSON response.');
+      }
+    }
 
     if (!response.ok) {
       // If unauthorized, the token might have expired
