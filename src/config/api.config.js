@@ -1,13 +1,26 @@
 // API Configuration for Hostel Management Mobile App
-// Update the IP address to match your backend server's IP address
+//
+// SETUP FOR TEAM MEMBERS:
+//   1. Copy .env.example to .env.local in the project root
+//   2. Set EXPO_PUBLIC_API_URL=http://<YOUR_LOCAL_IP>:5000
+//   3. Find your IP: run 'ipconfig' (Windows) or 'ifconfig' (Mac/Linux)
+//   4. .env.local is gitignored — never commit your personal IP
+//
+// NOTE: Do NOT use 'localhost' or '127.0.0.1' on a physical device/emulator
 
-// Get your local IP address by checking the Expo dev server output
-// or run 'ipconfig' (Windows) / 'ifconfig' (Mac/Linux) in terminal
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+if (!BASE_URL || BASE_URL.includes('YOUR_LOCAL_IP')) {
+  console.warn(
+    '[api.config] EXPO_PUBLIC_API_URL is not configured!\n' +
+    'Open .env.local and replace YOUR_LOCAL_IP with your machine\'s real IP.\n' +
+    'Run "ipconfig" (Windows) to find your IPv4 Address.\n' +
+    'Example: EXPO_PUBLIC_API_URL=http://192.168.1.x:5000'
+  );
+}
 
 export const API_CONFIG = {
-  // Replace this IP with your machine's IP address
-  // DO NOT use 'localhost' or '127.0.0.1' when testing on a physical device or emulator
-  BASE_URL: 'http://192.168.1.6:5000',
+  BASE_URL: BASE_URL || 'http://localhost:5000',
   
   // API endpoints
   ENDPOINTS: {
@@ -15,6 +28,11 @@ export const API_CONFIG = {
       SIGN_IN: '/api/auth/sign-in',
       SIGN_UP: '/api/auth/sign-up',
       SIGN_OUT: '/api/auth/sign-out',
+    },
+    QR: {
+      SCAN: '/api/qr/scan',
+      MY_LOGS: '/api/qr/my-logs',
+      GET_ACTIVE: '/api/qr/active',
     },
     DASHBOARD: {
       GET_DATA: '/api/dashboard/data',

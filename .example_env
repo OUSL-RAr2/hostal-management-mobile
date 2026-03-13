@@ -1,0 +1,14 @@
+# -------------------------------------------------------
+# Hostel Management Mobile — Environment Variables
+# -------------------------------------------------------
+# SETUP: Copy this file to .env.local and fill in your values.
+#        .env.local is gitignored so your personal IP stays local.
+#
+# How to find your local IP:
+#   Windows : ipconfig          → look for "IPv4 Address"
+#   Mac/Linux: ifconfig / ip a  → look for "inet" on your Wi-Fi adapter
+#
+# Make sure your phone/emulator AND your PC are on the SAME Wi-Fi network.
+# -------------------------------------------------------
+
+EXPO_PUBLIC_API_URL=http://YOUR_LOCAL_IP:5000
