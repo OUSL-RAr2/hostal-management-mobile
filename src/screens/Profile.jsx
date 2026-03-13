@@ -14,6 +14,7 @@ import {
 } from '@expo/vector-icons';
 import { Header } from '../components/ui';
 import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
+import { removeAuthToken } from '../services/auth/authService';
 
 const Profile = ({ onNavigate }) => {
   const studentData = {
@@ -64,7 +65,14 @@ const Profile = ({ onNavigate }) => {
           <OptionItem iconName="notifications-outline" text="Notifications" onPress={() => console.log('Notifications')} />
           <OptionItem iconName="wallet-outline" text="Payment History" onPress={() => console.log('Payment History')} />
           <OptionItem iconName="star-outline" text="Rate Your Stay" onPress={() => console.log('Rate Your Stay')} />
-          <OptionItem iconName="log-out-outline" text="Logout" onPress={() => console.log('Logout')} />
+          <OptionItem
+            iconName="log-out-outline"
+            text="Logout"
+            onPress={async () => {
+              await removeAuthToken();
+              onNavigate('start');
+            }}
+          />
         </View>
       </ScrollView>
 
