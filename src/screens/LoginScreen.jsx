@@ -6,6 +6,7 @@ import footerimg2 from '../../assets/footerimg2.png'
 import footerimg3 from '../../assets/footerimg3.png'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { buildUrl, API_CONFIG } from '../config/api.config';
+import { setStoredUser } from '../services/auth/authService';
 
 
 const LoginScreen = ({onNavigate}) => {
@@ -59,6 +60,7 @@ const LoginScreen = ({onNavigate}) => {
 
                 // Store token (data.token is already a string, no need to stringify)
                 await SecureStore.setItemAsync('token', data.token);
+                await setStoredUser(data?.data || {});
 
                 console.log('Login successful:', data);
 

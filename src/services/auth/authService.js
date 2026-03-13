@@ -22,8 +22,38 @@ export const getAuthToken = async () => {
 export const removeAuthToken = async () => {
   try {
     await SecureStore.deleteItemAsync('token');
+    await SecureStore.deleteItemAsync('user');
   } catch (error) {
     console.error('Error removing auth token:', error);
+  }
+};
+
+/**
+ * Get stored authenticated user details
+ * @returns {Promise<object|null>} User object or null if not found
+ */
+export const getStoredUser = async () => {
+  try {
+    const raw = await SecureStore.getItemAsync('user');
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch (error) {
+    console.error('Error getting stored user:', error);
+    return null;
+  }
+};
+
+/**
+ * Save authenticated user details in secure storage
+ * @param {object} userData
+ */
+export const setStoredUser = async (userData) => {
+  try {
+    await SecureStore.setItemAsync('user', JSON.stringify(userData || {}));
+  } catch (error) {
+    console.error('Error setting stored user:', error);
   }
 };
 
