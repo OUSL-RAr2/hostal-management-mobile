@@ -49,7 +49,7 @@ const QrCodeScanScreen = ({ onNavigate }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <Header title="QR Scan" onNavigate={onNavigate} />
 
@@ -123,7 +123,7 @@ const QrCodeScanScreen = ({ onNavigate }) => {
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab="QR Scan" onNavigate={onNavigate} />
-    </View>
+    </SafeAreaView>
   );
 };
 
