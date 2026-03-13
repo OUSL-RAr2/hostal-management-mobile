@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera'; 
@@ -17,6 +17,7 @@ const QrCodeScanScreen = ({ onNavigate }) => {
   });
   const [activeTab, setActiveTab] = useState('qr');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [manualCode, setManualCode] = useState('');
 
   // Camera State
   const [permission, requestPermission] = useCameraPermissions();
@@ -71,11 +72,14 @@ const QrCodeScanScreen = ({ onNavigate }) => {
 
     setScanned(true);
     setCameraOpen(false); // Close camera immediately after scanning
+    await handleCodeSubmission(data);
+  };
+
+  const handleCodeSubmission = async (code) => {
     setIsProcessing(true);
 
     try {
-      // Send the scanned QR code to backend
-      const result = await processQRScan(data);
+      const result = await processQRScan(code);
 
       // Update the UI with the result
       const statusText = result.action === 'check_in' 
@@ -96,7 +100,10 @@ const QrCodeScanScreen = ({ onNavigate }) => {
         [
           {
             text: "OK",
-            onPress: () => setIsProcessing(false)
+            onPress: () => {
+              setManualCode('');
+              setIsProcessing(false);
+            }
           }
         ]
       );
@@ -114,6 +121,22 @@ const QrCodeScanScreen = ({ onNavigate }) => {
         ]
       );
     }
+  };
+
+  const handleManualSubmit = async () => {
+    const code = manualCode.trim();
+
+    if (!code) {
+      Alert.alert('Missing Code', 'Please enter the code shown on the web QR screen.');
+      return;
+    }
+
+    if (!/^\d{9}$/.test(code)) {
+      Alert.alert('Invalid Code', 'Manual code must be exactly 9 digits.');
+      return;
+    }
+
+    await handleCodeSubmission(code);
   };
 
   return (
@@ -192,10 +215,28 @@ const QrCodeScanScreen = ({ onNavigate }) => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Manual Check-in/out</Text>
           <Text style={styles.cardDescription}>
-            If QR scanning is not available, you can manually check in/out here.
+            If QR scanning is not available, enter the code shown on the web QR screen.
           </Text>
-          <TouchableOpacity style={styles.manualButton}>
-            <Text style={styles.manualButtonText}>Manual Check-in/out</Text>
+          <TextInput
+            style={styles.manualInput}
+            placeholder="Enter 9-digit code"
+            placeholderTextColor={colors.textLight}
+            value={manualCode}
+            onChangeText={(text) => setManualCode(text.replace(/\D/g, '').slice(0, 9))}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="number-pad"
+            maxLength={9}
+            editable={!isProcessing}
+          />
+          <TouchableOpacity
+            style={[styles.manualButton, isProcessing && styles.manualButtonDisabled]}
+            onPress={handleManualSubmit}
+            disabled={isProcessing}
+          >
+            <Text style={styles.manualButtonText}>
+              {isProcessing ? 'Processing...' : 'Submit Code'}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -321,13 +362,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 18,
   },
+  manualInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginBottom: 12,
+    backgroundColor: colors.background,
+  },
   manualButton: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#F5F5F5',
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundLight,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
+  },
+  manualButtonDisabled: {
+    opacity: 0.6,
   },
   manualButtonText: {
     color: colors.textPrimary,
