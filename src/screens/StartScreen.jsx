@@ -67,7 +67,7 @@ const StartScreen = ({ onNavigate }) => {
 
             <View style={styles.loaderRow}>
                 <ActivityIndicator size="small" color="#C25B00" />
-                <Text style={styles.loaderText}>Preparing your app...</Text>
+                <Text style={styles.loaderText}>Loading...</Text>
             </View>
             </Animated.View>
 
