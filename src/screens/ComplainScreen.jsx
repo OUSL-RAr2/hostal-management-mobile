@@ -1,11 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { colors } from '../styles';
 import { Header, GradientButton } from '../components/ui';
 import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
-import { createComplaint, deleteComplaint, getUserComplaints } from '../services/dashboard/dashboardService';
+import { createComplaint, deleteComplaint, getUserComplaints, replyToComplaint } from '../services/dashboard/dashboardService';
+
+const getCurrentResponseKey = (complaint) => {
+  if (!complaint?.AdminResponse) return null;
+  return new Date(complaint.updatedAt || complaint.createdAt).toISOString();
+};
+
+const hasReplyForCurrentResponse = (complaint) => {
+  const responseKey = getCurrentResponseKey(complaint);
+  if (!responseKey || !complaint?.Description) return false;
+
+  return complaint.Description.includes(`[Student Reply|responseKey=${responseKey}|`);
+};
 
 const ComplainScreen = ({ onNavigate }) => {
   const [category, setCategory] = useState('');
@@ -15,6 +27,10 @@ const ComplainScreen = ({ onNavigate }) => {
   const [complaints, setComplaints] = useState([]);
   const [loadingComplaints, setLoadingComplaints] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [replyModalVisible, setReplyModalVisible] = useState(false);
+  const [selectedComplaintId, setSelectedComplaintId] = useState(null);
+  const [replyMessage, setReplyMessage] = useState('');
+  const [isReplySubmitting, setIsReplySubmitting] = useState(false);
   const isRealtimeSyncingRef = useRef(false);
 
   useEffect(() => {
@@ -73,6 +89,45 @@ const ComplainScreen = ({ onNavigate }) => {
   };
 
   const canDeleteComplaint = (status) => status === 'pending' || status === 'resolved';
+  const canReplyComplaint = (item) => (
+    Boolean(item.AdminResponse) &&
+    item.Status !== 'resolved' &&
+    !hasReplyForCurrentResponse(item)
+  );
+
+  const openReplyModal = (complaintId) => {
+    setSelectedComplaintId(complaintId);
+    setReplyMessage('');
+    setReplyModalVisible(true);
+  };
+
+  const closeReplyModal = () => {
+    if (isReplySubmitting) return;
+    setReplyModalVisible(false);
+    setSelectedComplaintId(null);
+    setReplyMessage('');
+  };
+
+  const handleSendReply = async () => {
+    const message = replyMessage.trim();
+    if (!message) {
+      Alert.alert('Missing Message', 'Please enter your reply.');
+      return;
+    }
+
+    try {
+      setIsReplySubmitting(true);
+      await replyToComplaint(selectedComplaintId, message);
+      closeReplyModal();
+      await loadComplaints({ silent: true });
+      Alert.alert('Success', 'Reply sent successfully.');
+    } catch (error) {
+      console.error('Failed to send reply:', error);
+      Alert.alert('Reply Failed', error.message || 'Unable to send reply.');
+    } finally {
+      setIsReplySubmitting(false);
+    }
+  };
 
   const handleDeleteComplaint = (complaintId) => {
     Alert.alert(
@@ -230,14 +285,24 @@ const ComplainScreen = ({ onNavigate }) => {
                   </View>
                 )}
                 <Text style={styles.complaintDate}>{formatDate(item.createdAt)}</Text>
-                {canDeleteComplaint(item.Status) && (
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => handleDeleteComplaint(item.ComplaintID)}
-                  >
-                    <Text style={styles.deleteButtonText}>Delete</Text>
-                  </TouchableOpacity>
-                )}
+                <View style={styles.cardActionsRow}>
+                  {canReplyComplaint(item) && (
+                    <TouchableOpacity
+                      style={styles.replyButton}
+                      onPress={() => openReplyModal(item.ComplaintID)}
+                    >
+                      <Text style={styles.replyButtonText}>Reply</Text>
+                    </TouchableOpacity>
+                  )}
+                  {canDeleteComplaint(item.Status) && (
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => handleDeleteComplaint(item.ComplaintID)}
+                    >
+                      <Text style={styles.deleteButtonText}>Delete</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             ))
           )}
@@ -248,6 +313,38 @@ const ComplainScreen = ({ onNavigate }) => {
       </ScrollView>
 
       <BottomNavigation activeTab="Complain" onNavigate={onNavigate} />
+
+      <Modal
+        visible={replyModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeReplyModal}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Reply to Admin/Warden</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Type your reply..."
+              placeholderTextColor="#999"
+              value={replyMessage}
+              onChangeText={setReplyMessage}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              editable={!isReplySubmitting}
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelButton} onPress={closeReplyModal} disabled={isReplySubmitting}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.sendButton} onPress={handleSendReply} disabled={isReplySubmitting}>
+                <Text style={styles.sendButtonText}>{isReplySubmitting ? 'Sending...' : 'Send Reply'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -459,6 +556,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999999',
   },
+  cardActionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 10,
+  },
+  replyButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#E8F1FF',
+    borderWidth: 1,
+    borderColor: '#B7D0FF',
+  },
+  replyButtonText: {
+    color: '#2457C5',
+    fontSize: 13,
+    fontWeight: '600',
+  },
   adminResponseBox: {
     marginTop: 8,
     padding: 10,
@@ -479,8 +595,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   deleteButton: {
-    alignSelf: 'flex-start',
-    marginTop: 10,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
@@ -492,6 +606,57 @@ const styles = StyleSheet.create({
     color: '#C62828',
     fontSize: 13,
     fontWeight: '600',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 16,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    padding: 10,
+    minHeight: 90,
+    color: '#111827',
+    marginBottom: 12,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+  },
+  cancelButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 9,
+    backgroundColor: '#F3F4F6',
+  },
+  cancelButtonText: {
+    color: '#374151',
+    fontWeight: '600',
+  },
+  sendButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 9,
+    backgroundColor: colors.primary,
+  },
+  sendButtonText: {
+    color: '#fff',
+    fontWeight: '700',
   },
 });
 

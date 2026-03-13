@@ -164,3 +164,53 @@ export const deleteComplaint = async (complaintId) => {
     throw error;
   }
 };
+
+/**
+ * Send student reply to an existing complaint
+ * @param {string} complaintId - Complaint identifier
+ * @param {string} message - Reply text
+ * @returns {Promise<object>} Updated complaint
+ */
+export const replyToComplaint = async (complaintId, message) => {
+  try {
+    if (!complaintId) {
+      throw new Error('Invalid complaint reference.');
+    }
+
+    try {
+      const dashboardResponse = await authenticatedRequest(
+        `${API_CONFIG.ENDPOINTS.DASHBOARD.GET_COMPLAINTS}/${complaintId}/reply`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ message }),
+        }
+      );
+
+      if (dashboardResponse.success === false) {
+        throw new Error(dashboardResponse.message || 'Failed to send reply');
+      }
+
+      return dashboardResponse.data;
+    } catch (primaryError) {
+      const fallbackResponse = await authenticatedRequest(
+        `${API_CONFIG.ENDPOINTS.COMPLAINTS.GET_ALL}/${complaintId}/status`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            status: 'in_progress',
+            adminResponse: `[Student Reply] ${message}`,
+          }),
+        }
+      );
+
+      if (fallbackResponse.success === false) {
+        throw new Error(fallbackResponse.message || primaryError.message || 'Failed to send reply');
+      }
+
+      return fallbackResponse.data;
+    }
+  } catch (error) {
+    console.error('Error sending complaint reply:', error);
+    throw error;
+  }
+};

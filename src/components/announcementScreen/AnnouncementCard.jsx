@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../styles';
 
-const AnnouncementCard = ({ announcement, onPress }) => {
+const AnnouncementCard = ({ announcement, isRead = false, onMarkAsRead, onReply }) => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high':
@@ -33,13 +33,15 @@ const AnnouncementCard = ({ announcement, onPress }) => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return 'N/A';
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return date.toLocaleDateString('en-US', options);
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <View style={[styles.card, !isRead && styles.cardUnread]}>
       <View style={styles.cardHeader}>
         <View style={styles.iconContainer}>
           <MaterialCommunityIcons
@@ -58,26 +60,38 @@ const AnnouncementCard = ({ announcement, onPress }) => {
             { backgroundColor: getPriorityColor(announcement.priority) + '20' },
           ]}
         >
-          <View
-            style={[
-              styles.priorityDot,
-              { backgroundColor: getPriorityColor(announcement.priority) },
-            ]}
-          />
+          {!isRead ? (
+            <View
+              style={[
+                styles.priorityDot,
+                { backgroundColor: getPriorityColor(announcement.priority) },
+              ]}
+            />
+          ) : (
+            <Text style={styles.readText}>Read</Text>
+          )}
         </View>
       </View>
 
       <Text style={styles.description}>{announcement.description}</Text>
 
       <View style={styles.footer}>
-        <Text style={styles.readMore}>Read more</Text>
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={20}
-          color={colors.primary}
-        />
+        <View style={styles.footerActions}>
+          {announcement.canReply && (
+            <TouchableOpacity style={styles.replyButton} onPress={onReply}>
+              <Text style={styles.replyButtonText}>Reply</Text>
+            </TouchableOpacity>
+          )}
+          {isRead ? (
+            <Text style={styles.readStateText}>Marked as read</Text>
+          ) : (
+            <TouchableOpacity style={styles.markReadButton} onPress={onMarkAsRead}>
+              <Text style={styles.markReadButtonText}>Mark as Read</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -93,6 +107,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
+  },
+  cardUnread: {
+    borderWidth: 1,
+    borderColor: '#FFD7B5',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -133,6 +151,11 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
   },
+  readText: {
+    fontSize: 10,
+    color: '#475467',
+    fontWeight: '600',
+  },
   description: {
     fontSize: 14,
     color: '#666666',
@@ -144,11 +167,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
-  readMore: {
-    fontSize: 14,
+  footerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  markReadButton: {
+    backgroundColor: '#FFF3E0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#FFD7B5',
+  },
+  replyButton: {
+    backgroundColor: '#E8F1FF',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#B7D0FF',
+  },
+  replyButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#2457C5',
+  },
+  markReadButtonText: {
+    fontSize: 13,
     fontWeight: '600',
     color: colors.primary,
-    marginRight: 4,
+  },
+  readStateText: {
+    fontSize: 13,
+    color: '#667085',
+    fontWeight: '600',
   },
 });
 
