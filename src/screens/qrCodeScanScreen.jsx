@@ -1,59 +1,247 @@
-
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { CameraView, useCameraPermissions } from 'expo-camera'; 
 import { colors } from '../styles';
 import { Header, GradientButton } from '../components/ui';
 import BottomNavigation from '../components/dashboardScreen/BottomNavigation';
+import { processQRScan, getMyLogs } from '../services/qr/qrScanner';
 
 const QrCodeScanScreen = ({ onNavigate }) => {
-  const [currentStatus, setCurrentStatus] = useState('Checked In - Room F-24');
+  const [currentStatus, setCurrentStatus] = useState({
+    text: 'Not checked in',
+    action: null,
+    location: null,
+    timestamp: null,
+  });
   const [activeTab, setActiveTab] = useState('qr');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [manualCode, setManualCode] = useState('');
+
+  // Camera State
+  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [scanned, setScanned] = useState(false);
+
+  // Load last check-in/out status on mount
+  useEffect(() => {
+    loadLastStatus();
+  }, []);
+
+  const loadLastStatus = async () => {
+    try {
+      const logs = await getMyLogs(1); // Get the most recent log
+      if (logs && logs.length > 0) {
+        const lastLog = logs[0];
+        const action = lastLog.Action;
+        const location = lastLog.Location;
+        const timestamp = new Date(lastLog.Timestamp).toLocaleString();
+        
+        setCurrentStatus({
+          text: action === 'check_in' 
+            ? `Checked In - ${location}` 
+            : `Checked Out - ${location}`,
+          action: action,
+          location: location,
+          timestamp: timestamp,
+        });
+      }
+    } catch (error) {
+      console.log('Could not load last status:', error.message);
+      // It's okay if this fails, user might not have any logs yet
+    }
+  };
+
+  // Function to request permission and open camera
+  const handleOpenScanner = async () => {
+    if (!permission?.granted) {
+      const { granted } = await requestPermission();
+      if (!granted) {
+        Alert.alert("Permission Denied", "You need to allow camera access to scan QR codes.");
+        return;
+      }
+    }
+    setCameraOpen(true);
+    setScanned(false);
+  };
+
+  // Function to handle the actual scan
+  const handleBarCodeScanned = async ({ type, data }) => {
+    if (isProcessing) return; // Prevent multiple scans
+
+    setScanned(true);
+    setCameraOpen(false); // Close camera immediately after scanning
+    await handleCodeSubmission(data);
+  };
+
+  const handleCodeSubmission = async (code) => {
+    setIsProcessing(true);
+
+    try {
+      const result = await processQRScan(code);
+
+      // Update the UI with the result
+      const statusText = result.action === 'check_in' 
+        ? `Checked In - ${result.location}` 
+        : `Checked Out - ${result.location}`;
+
+      setCurrentStatus({
+        text: statusText,
+        action: result.action,
+        location: result.location,
+        timestamp: new Date(result.timestamp).toLocaleString(),
+      });
+
+      // Show success message
+      Alert.alert(
+        "Success!", 
+        result.message,
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              setManualCode('');
+              setIsProcessing(false);
+            }
+          }
+        ]
+      );
+
+    } catch (error) {
+      console.error('QR Scan Error:', error);
+      Alert.alert(
+        "Scan Failed", 
+        error.message || "Failed to process QR code. Please try again.",
+        [
+          {
+            text: "OK",
+            onPress: () => setIsProcessing(false)
+          }
+        ]
+      );
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    const code = manualCode.trim();
+
+    if (!code) {
+      Alert.alert('Missing Code', 'Please enter the code shown on the web QR screen.');
+      return;
+    }
+
+    if (!/^\d{9}$/.test(code)) {
+      Alert.alert('Invalid Code', 'Manual code must be exactly 9 digits.');
+      return;
+    }
+
+    await handleCodeSubmission(code);
+  };
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <Header title="QR Scan" onNavigate={onNavigate} />
 
-      {/* Main Content */}
-      <ScrollView style={styles.content}>
-        {/* QR Scanner Card */}
+      {/* Main Content - EVERYTHING wraps inside the ScrollView now */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        scrollEnabled={!cameraOpen}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Card 1: QR Scanner AND Status Combined */}
         <View style={styles.card}>
           <View style={styles.qrScannerBox}>
-            <View style={styles.qrPlaceholder}>
-              <MaterialCommunityIcons name="qrcode-scan" size={120} color="#666" />
+
+            {/* Toggle between Camera View and Placeholder */}
+            {cameraOpen ? (
+              <View style={styles.cameraContainer}>
+                <CameraView
+                  style={styles.camera}
+                  facing="back"
+                  isActive={cameraOpen}
+                  onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+                  barcodeScannerSettings={{
+                    barcodeTypes: ["qr"],
+                  }}
+                />
+
+                <TouchableOpacity
+                  style={styles.closeCameraButton}
+                  onPress={() => setCameraOpen(false)}
+                >
+                  <Text style={styles.closeCameraText}>Cancel Scan</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.qrPlaceholder}>
+                <MaterialCommunityIcons name="qrcode-scan" size={120} color="#666" />
+                <Text style={styles.qrInstruction}>Point camera at QR code</Text>
+              </View>
+            )}
+          </View>
+
+          {!cameraOpen && (
+            <GradientButton
+              title={isProcessing ? "Processing..." : "Open QR Scanner"}
+              onPress={handleOpenScanner}
+              disabled={isProcessing}
+            />
+          )}
+
+          {/* Status Section moved inside the first card to match the screenshot */}
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusLabel}>Current Status</Text>
+            <View style={styles.statusRow}>
+              <View 
+                style={[
+                  styles.statusIndicator,
+                  currentStatus.action === 'check_in' && styles.statusIndicatorActive
+                ]} 
+              />
+              <Text style={styles.statusText}>{currentStatus.text}</Text>
             </View>
-            <Text style={styles.qrInstruction}>Point camera at QR code</Text>
-          </View>
-          
-          <GradientButton 
-            title="Open QR Scanne" 
-            onPress={() => console.log('Open QR Scanner')}
-          />
-        </View>
-
-        {/* Status Card */}
-        <View style={styles.card}>
-          <Text style={styles.statusLabel}>Current Status</Text>
-          <View style={styles.statusRow}>
-            <View style={styles.statusIndicator} />
-            <Text style={styles.statusText}>{currentStatus}</Text>
+            {currentStatus.timestamp && (
+              <Text style={styles.timestampText}>
+                Last updated: {currentStatus.timestamp}
+              </Text>
+            )}
           </View>
         </View>
 
-        {/* Manual Check-in Card */}
+        {/* Card 2: Manual Check-in Card */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Manual Check-in/out</Text>
           <Text style={styles.cardDescription}>
-            If QR scanning is not available, you can manually check in/out here.
+            If QR scanning is not available, enter the code shown on the web QR screen.
           </Text>
-          <TouchableOpacity style={styles.manualButton}>
-            <Text style={styles.manualButtonText}>Manual Check-in/out</Text>
+          <TextInput
+            style={styles.manualInput}
+            placeholder="Enter 9-digit code"
+            placeholderTextColor={colors.textLight}
+            value={manualCode}
+            onChangeText={(text) => setManualCode(text.replace(/\D/g, '').slice(0, 9))}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="number-pad"
+            maxLength={9}
+            editable={!isProcessing}
+          />
+          <TouchableOpacity
+            style={[styles.manualButton, isProcessing && styles.manualButtonDisabled]}
+            onPress={handleManualSubmit}
+            disabled={isProcessing}
+          >
+            <Text style={styles.manualButtonText}>
+              {isProcessing ? 'Processing...' : 'Submit Code'}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Bottom Navigation - Reusable Component */}
+      {/* Bottom Navigation */}
       <BottomNavigation activeTab="QR Scan" onNavigate={onNavigate} />
     </View>
   );
@@ -64,42 +252,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.backgroundLight,
   },
-  header: {
-    backgroundColor: colors.primary,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    opacity: 0.9,
-    marginTop: 2,
-  },
-  notificationButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  notificationIcon: {
-    fontSize: 20,
-  },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 16,
+    flexGrow: 1,
+ // Keeps the bottom card from hiding behind the navigation bar
   },
   card: {
     backgroundColor: colors.background,
@@ -126,29 +285,44 @@ const styles = StyleSheet.create({
     minHeight: 280,
     backgroundColor: '#FFF8F0',
   },
+  cameraContainer: {
+    height: 300,
+    width: '100%',
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  camera: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  closeCameraButton: {
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  closeCameraText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
   qrInstruction: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.textSecondary,
     textAlign: 'center',
+    marginTop: 10,
   },
-  scanButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
+  /* --- Modified Status Styles to center them under the button --- */
+  statusContainer: {
+    marginTop: 24,
     alignItems: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  scanButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
   },
   statusLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.textSecondary,
     marginBottom: 8,
   },
@@ -157,74 +331,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.success,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#999',
     marginRight: 8,
   },
+  statusIndicatorActive: {
+    backgroundColor: colors.success,
+  },
   statusText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.success,
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  timestampText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 6,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.textPrimary,
     marginBottom: 8,
   },
   cardDescription: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.textSecondary,
     marginBottom: 16,
-    lineHeight: 20,
+    lineHeight: 18,
+  },
+  manualInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: colors.textPrimary,
+    marginBottom: 12,
+    backgroundColor: colors.background,
   },
   manualButton: {
-    borderWidth: 2,
-    borderColor: colors.textLight,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundLight,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
   },
-  manualButtonText: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    backgroundColor: colors.background,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 8,
-  },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  navIcon: {
-    fontSize: 24,
-    marginBottom: 4,
+  manualButtonDisabled: {
     opacity: 0.6,
   },
-  navIconActive: {
-    opacity: 1,
-  },
-  navLabel: {
-    fontSize: 11,
-    color: colors.textSecondary,
-  },
-  navLabelActive: {
-    color: colors.primary,
+  manualButtonText: {
+    color: colors.textPrimary,
+    fontSize: 14,
     fontWeight: '600',
   },
 });

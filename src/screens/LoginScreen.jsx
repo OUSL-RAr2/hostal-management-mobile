@@ -1,45 +1,73 @@
-import React, { useEffect } from 'react'
+import React, { useState } from 'react'
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Image} from 'react-native'
+import * as SecureStore from 'expo-secure-store';
 import footerimg1 from '../../assets/footerimg1.png'
 import footerimg2 from '../../assets/footerimg2.png'
 import footerimg3 from '../../assets/footerimg3.png'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { buildUrl, API_CONFIG } from '../config/api.config';
 
-const LoginScreen = ({ onNavigate }) => {
-    useEffect(() => {
-        // Navigate to dashboard after 10 seconds
-        const timer = setTimeout(() => {
-            if (onNavigate) {
+
+const LoginScreen = ({onNavigate}) => {
+
+
+    const [loginData, setLoginData] = useState({
+        nic: '',
+        password: '',
+    });
+
+    const handleSubmit = async () => {
+        
+        try {
+            const response = await fetch(buildUrl(API_CONFIG.ENDPOINTS.AUTH.SIGN_IN), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log(data, typeof data);
+
+                // Store token (data.token is already a string, no need to stringify)
+                await SecureStore.setItemAsync('token', data.token);
+
+                console.log('Login successful:', data);
+
+                // Navigate to dashboard after successful login
                 onNavigate();
+            } else {
+                // Show error message if login fails
+                alert(data.message || 'Login failed. Please check your credentials.');
             }
-        }, 10000);
 
-        // Cleanup timer on unmount
-        return () => clearTimeout(timer);
-    }, [onNavigate]);
-
+        } catch (error) {
+            console.error('Error logging in:', error);
+            alert('An error occurred during login. Please try again.');
+        }
+    }
     return(
         <SafeAreaView style={styles.container}>
             <Text style={styles.appTitle}>OUSL{"\n"}StaySmart</Text>
             <Text style={styles.text}>Login to your account</Text>
 
-            <TextInput style={styles.username} placeholder='Enter your username'></TextInput>
 
-            <TextInput style={styles.password} placeholder='Enter your Password'>
+            <TextInput style={styles.nic} placeholder='Enter your NIC' value={loginData.nic} onChangeText={(value) => setLoginData({...loginData, nic: value})}></TextInput>
+
+            <TextInput style={styles.password} placeholder='Enter your Password' value={loginData.password} onChangeText={(value) => setLoginData({...loginData, password: value})} >
             </TextInput>
 
             <TouchableOpacity>
                 <Text style={styles.forgotPass}>Forgot Password</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.loginButton}>
+            <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
                 <Text style={styles.loginButtonName}>Login</Text>
             </TouchableOpacity>
 
-            <Text style={styles.signupText}>
-                If you don't have a account?
-                <Text style={styles.signupLink}>Sign Up</Text>
-            </Text>
             <View style={styles.footer}>
                 <Image source={footerimg1} style={styles.footerImage1}/>
                 <Image source={footerimg2} style={styles.footerImage2}/>
@@ -72,7 +100,7 @@ const styles = StyleSheet.create ({
         marginTop:20,
         marginBottom:'15%',
     },
-    username:{
+    nic:{
         width: '75%',
         borderWidth: 1,
         borderColor: '#C25B00',

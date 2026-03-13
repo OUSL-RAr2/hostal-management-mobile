@@ -1,9 +1,39 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../styles';
+import { getUnreadAnnouncementCount } from '../../services/announcement/announcementService';
 
 const Header = ({ title, subtitle = 'OUSL TRF Hostel', onNotificationPress, onNavigate, backgroundColor }) => {
+  const [unreadCount, setUnreadCount] = useState(0);
+  const isCountingRef = useRef(false);
+
+  useEffect(() => {
+    const loadUnreadCount = async () => {
+      try {
+        const count = await getUnreadAnnouncementCount();
+        setUnreadCount(count);
+      } catch (error) {
+        console.error('Failed to load unread announcement count:', error);
+      }
+    };
+
+    loadUnreadCount();
+
+    const intervalId = setInterval(async () => {
+      if (isCountingRef.current) return;
+
+      try {
+        isCountingRef.current = true;
+        await loadUnreadCount();
+      } finally {
+        isCountingRef.current = false;
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const handleNotificationPress = () => {
     if (onNotificationPress) {
       onNotificationPress();
@@ -25,6 +55,11 @@ const Header = ({ title, subtitle = 'OUSL TRF Hostel', onNotificationPress, onNa
         onPress={handleNotificationPress}
       >
         <Ionicons name="notifications-outline" size={28} color="#fff" />
+        {unreadCount > 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+          </View>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -61,6 +96,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 8,
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 4,
+    backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
   },
 });
 
