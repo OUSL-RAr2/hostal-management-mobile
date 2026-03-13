@@ -11,8 +11,10 @@ import QrCodeScanScreen from './src/screens/qrCodeScanScreen.jsx';
 import ComplainScreen from './src/screens/ComplainScreen.jsx';
 import AnnouncementScreen from './src/screens/AnnouncementScreen.jsx';
 
+const INITIAL_SCREEN = 'start';
+
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('start');
+  const [currentScreen, setCurrentScreen] = useState(INITIAL_SCREEN);
 
   const handleNavigation = (screen) => {
     setCurrentScreen(screen);
