@@ -186,8 +186,8 @@ const DashboardScreen = ({ onNavigate }) => {
           <QuickActionButton 
             backgroundColor={colors.actionPurple}
             iconSource={require('../../assets/icon/settings.svg')}
-            label="Settings"
-            onPress={() => console.log('Settings pressed')}
+            label="Profile"
+            onPress={() => onNavigate && onNavigate('profile')}
           />
         </View>
       </View>
