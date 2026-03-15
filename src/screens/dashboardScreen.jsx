@@ -167,25 +167,25 @@ const DashboardScreen = ({ onNavigate }) => {
         <View style={styles.actionGrid}>
           <QuickActionButton 
             backgroundColor={colors.actionBlue}
-            iconSource={require('../../assets/icon/qr-code.svg')}
+            iconName="qrcode-scan"
             label="Scan QR Code"
             onPress={() => onNavigate && onNavigate('qrscan')}
           />
           <QuickActionButton 
             backgroundColor={colors.actionGreen}
-            iconSource={require('../../assets/icon/complaint.svg')}
+            iconName="message-plus"
             label="New Complaint"
             onPress={() => onNavigate && onNavigate('complain')}
           />
           <QuickActionButton 
             backgroundColor={colors.actionPink}
-            iconSource={require('../../assets/icon/announcement.svg')}
+            iconName="bullhorn"
             label="Announcements"
             onPress={() => onNavigate && onNavigate('announcements')}
           />
           <QuickActionButton 
             backgroundColor={colors.actionPurple}
-            iconSource={require('../../assets/icon/settings.svg')}
+            iconName="account-cog"
             label="Profile"
             onPress={() => onNavigate && onNavigate('profile')}
           />
