@@ -1,20 +1,46 @@
-import React, { useState } from 'react'
-import {View, Text, StyleSheet, TextInput, TouchableOpacity, Image} from 'react-native'
+import React, { useEffect, useRef } from 'react'
+import {View, Text, StyleSheet, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView, Platform, Keyboard, Animated} from 'react-native'
 import * as SecureStore from 'expo-secure-store';
 import footerimg1 from '../../assets/footerimg1.png'
 import footerimg2 from '../../assets/footerimg2.png'
 import footerimg3 from '../../assets/footerimg3.png'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { buildUrl, API_CONFIG } from '../config/api.config';
+import { setStoredUser } from '../services/auth/authService';
 
 
 const LoginScreen = ({onNavigate}) => {
 
 
-    const [loginData, setLoginData] = useState({
+    const [loginData, setLoginData] = React.useState({
         nic: '',
         password: '',
     });
+
+    const footerAnim = useRef(new Animated.Value(1)).current;
+
+    const hideFooter = () => Animated.timing(footerAnim, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+    }).start();
+
+    const showFooter = () => Animated.timing(footerAnim, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: true,
+    }).start();
+
+    useEffect(() => {
+        const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+        const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+        const showSub = Keyboard.addListener(showEvent, hideFooter);
+        const hideSub = Keyboard.addListener(hideEvent, showFooter);
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, []);
 
     const handleSubmit = async () => {
         
@@ -34,6 +60,7 @@ const LoginScreen = ({onNavigate}) => {
 
                 // Store token (data.token is already a string, no need to stringify)
                 await SecureStore.setItemAsync('token', data.token);
+                await setStoredUser(data?.data || {});
 
                 console.log('Login successful:', data);
 
@@ -51,29 +78,62 @@ const LoginScreen = ({onNavigate}) => {
     }
     return(
         <SafeAreaView style={styles.container}>
-            <Text style={styles.appTitle}>OUSL{"\n"}StaySmart</Text>
-            <Text style={styles.text}>Login to your account</Text>
+            <KeyboardAvoidingView
+                style={styles.keyboardAvoid}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    keyboardShouldPersistTaps='handled'
+                    showsVerticalScrollIndicator={false}
+                >
+                    <Text style={styles.appTitle}>OUSL{"\n"}StaySmart</Text>
+                    <Text style={styles.text}>Login to your account</Text>
 
+                    <TextInput
+                        style={styles.nic}
+                        placeholder='Enter your NIC'
+                        value={loginData.nic}
+                        onChangeText={(value) => setLoginData({...loginData, nic: value})}
+                        autoCapitalize='characters'
+                        autoCorrect={false}
+                        textContentType='username'
+                    />
 
-            <TextInput style={styles.nic} placeholder='Enter your NIC' value={loginData.nic} onChangeText={(value) => setLoginData({...loginData, nic: value})}></TextInput>
+                    <TextInput
+                        style={styles.password}
+                        placeholder='Enter your Password'
+                        value={loginData.password}
+                        onChangeText={(value) => setLoginData({...loginData, password: value})}
+                        secureTextEntry
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        textContentType='password'
+                    />
 
-            <TextInput style={styles.password} placeholder='Enter your Password' value={loginData.password} onChangeText={(value) => setLoginData({...loginData, password: value})} >
-            </TextInput>
+                    <TouchableOpacity>
+                        <Text style={styles.forgotPass}>Forgot Password</Text>
+                    </TouchableOpacity>
 
-            <TouchableOpacity>
-                <Text style={styles.forgotPass}>Forgot Password</Text>
-            </TouchableOpacity>
+                    <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
+                        <Text style={styles.loginButtonName}>Login</Text>
+                    </TouchableOpacity>
 
-            <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
-                <Text style={styles.loginButtonName}>Login</Text>
-            </TouchableOpacity>
+                    {/* spacer so button isn't hidden behind footer */}
+                    <View style={{ height: 180 }} />
+                </ScrollView>
+            </KeyboardAvoidingView>
 
-            <View style={styles.footer}>
+            {/* Footer fades out when keyboard opens, fades back in when it closes */}
+            <Animated.View
+                style={[styles.footer, { opacity: footerAnim, transform: [{ translateY: footerAnim.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }] }]}
+                pointerEvents='none'
+            >
                 <Image source={footerimg1} style={styles.footerImage1}/>
                 <Image source={footerimg2} style={styles.footerImage2}/>
-                <Image source={footerimg3} style = {styles.footerImage3}/>
-            </View>
-
+                <Image source={footerimg3} style={styles.footerImage3}/>
+            </Animated.View>
         </SafeAreaView>
     );
 }
@@ -81,9 +141,15 @@ const LoginScreen = ({onNavigate}) => {
 const styles = StyleSheet.create ({
     container:{
         flex:1,
-        flexDirection:'column',
-        justifyContent:"flex-start",
         backgroundColor:'#FFFFFF',
+    },
+    keyboardAvoid: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        flexDirection: 'column',
+        alignItems: 'stretch',
     },
     appTitle:{
         color: '#E74C3C',
@@ -155,6 +221,7 @@ const styles = StyleSheet.create ({
         left: 0,
         justifyContent: 'center',
         alignItems: 'center',
+        zIndex: 0,
     },
     footerImage1: {
         position:'absolute',

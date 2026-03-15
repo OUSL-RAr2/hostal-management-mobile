@@ -21,6 +21,7 @@ const hasReplyForCurrentResponse = (complaint) => {
 
 const ComplainScreen = ({ onNavigate }) => {
   const [category, setCategory] = useState('');
+  const [priority, setPriority] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -157,8 +158,8 @@ const ComplainScreen = ({ onNavigate }) => {
     const trimmedTitle = title.trim();
     const trimmedDescription = description.trim();
 
-    if (!category || !trimmedTitle || !trimmedDescription) {
-      Alert.alert('Missing Details', 'Please select a category and fill in title and description.');
+    if (!category || !priority || !trimmedTitle || !trimmedDescription) {
+      Alert.alert('Missing Details', 'Please select category and priority, and fill in title and description.');
       return;
     }
 
@@ -167,6 +168,7 @@ const ComplainScreen = ({ onNavigate }) => {
 
       await createComplaint({
         category,
+        priority,
         title: trimmedTitle,
         description: isAnonymous
           ? `[Anonymous Request]\n${trimmedDescription}`
@@ -174,6 +176,7 @@ const ComplainScreen = ({ onNavigate }) => {
       });
 
       setCategory('');
+      setPriority('');
       setTitle('');
       setDescription('');
       setIsAnonymous(false);
@@ -211,6 +214,21 @@ const ComplainScreen = ({ onNavigate }) => {
               <Picker.Item label="Cleanliness" value="cleanliness" />
               <Picker.Item label="Security concern" value="security" />
               <Picker.Item label="Other" value="other" />
+            </Picker>
+          </View>
+
+          <Text style={styles.label}>Priority</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={priority}
+              onValueChange={(itemValue) => setPriority(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select priority" value="" />
+              <Picker.Item label="Low" value="low" />
+              <Picker.Item label="Medium" value="medium" />
+              <Picker.Item label="High" value="high" />
+              <Picker.Item label="Urgent" value="urgent" />
             </Picker>
           </View>
 
